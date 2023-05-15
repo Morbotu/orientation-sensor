@@ -1,9 +1,21 @@
 import asyncio
 from websockets.server import serve
+from websockets.exceptions import ConnectionClosedOK
 import time
 import board
 import adafruit_mma8451
 import math
+import socket
+import fcntl
+import struct
+
+def get_ip_address(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', ifname[:15])
+    )[20:24])
 
 async def echo(websocket):
     x, y, z = sensor.acceleration
@@ -20,13 +32,18 @@ async def echo(websocket):
         except ZeroDivisionError:
             roll = 90 if x > 0 else -90
 
-        await websocket.send(f"{roll}:{pitch}")
+        try:
+            await websocket.send(f"{roll}:{pitch}")
+        except ConnectionClosedOK:
+            print("Connection closed")
+            
 
 async def main():
-    async with serve(echo, "192.168.182.30", 8765):
-        print("Available 192.168.182.30:8765...")
+    async with serve(echo, ip, 8765):
+        print(f"Available {ip}:8765...")
         await asyncio.Future()  # run forever
 
+ip = get_ip_address(b"wlan0")
 i2c = board.I2C()
 while True:
     try:
