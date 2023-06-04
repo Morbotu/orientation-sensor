@@ -17,9 +17,9 @@ declination_angle = 0.0
 def calculate_compass_heading(mag_data, declination_angle):
     # Normalize magnetometer data
     mag_norm = math.sqrt(mag_data[0]**2 + mag_data[1]**2 + mag_data[2]**2)
-    mag_norm_x = math.abs(mag_data[0] / mag_norm)
-    mag_norm_y = math.abs(mag_data[1] / mag_norm)
-    mag_norm_z = math.abs(mag_data[2] / mag_norm)
+    mag_norm_x = abs(mag_data[0] / mag_norm)
+    mag_norm_y = abs(mag_data[1] / mag_norm)
+    mag_norm_z = abs(mag_data[2] / mag_norm)
 
     # Calculate heading angle
     heading = math.atan2(mag_norm_y, mag_norm_x)
