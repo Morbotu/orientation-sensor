@@ -12,11 +12,19 @@ class Inclinometer:
         angle = degrees(atan2(y, x)) - 90
         if angle < -180:
             angle += 360
-        return angle
+        return -angle
 
-    def get_inclination(self):
-        x, y, z = self.sensor.acceleration
-        return self.vector_2_degrees(x, z), self.vector_2_degrees(y, z)
+    def __get_angle_xz(self):
+        return self.vector_2_degrees(self.x, self.z)
+
+    def __get_angle_yz(self):
+        return self.vector_2_degrees(self.y, self.z)
+
+    def measure(self):
+        self.x, self.y, self.z = self.sensor.acceleration
+
+    angle_xz = property(__get_angle_xz)
+    angle_yz = property(__get_angle_yz)
 
 
 if __name__ == "__main__":
@@ -24,7 +32,9 @@ if __name__ == "__main__":
     inclinometer = Inclinometer(i2c)
 
     while True:
-        angle_xz, angle_yz = inclinometer.get_inclination()
+        inclinometer.measure()
+        angle_xz = inclinometer.angle_xz
+        angle_yz = inclinometer.angle_yz
         print(
             "XZ angle = {:6.2f}deg   YZ angle = {:6.2f}deg".format(angle_xz, angle_yz)
         )
